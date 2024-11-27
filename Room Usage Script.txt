@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>Room Usage Report</title>
+    <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
+  </head>
+  <body>
+    <div class="report-wrapper">
+      {% if report.kind == "event" %}
+        <h1 class="header-large txt-center gutter-bottom-small">Room Usage Report</h1>
+      {% else %}
+        <h1 class="header-large txt-center gutter-bottom-small">{{ report.kind | capitalize }} Room Usage Report</h1>
+      {% endif %}
+      <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}: {{ report.start_date }} through {{ report.end_date }}</h2>
+
+      {% if report.org_twenty_four_hour_time? %}
+        {% assign date_format = "%A, %B %-d, %H:%M" %}
+      {% else %}
+        {% assign date_format = "%A, %B %-d, %-I:%M%P" %}
+      {% endif%}
+
+      {% if rooms.size != 0 %}
+        <section class="rooms"> 
+          <h2 class="header-large date-header gutter-bottom-small">Rooms</h2>
+          {% for room in rooms %}
+            {% if room.bookings.size > 0 %} 
+              <article class="room">
+                <h2 class="header-large gutter-bottom-small">{{ room.name }}</h2>
+                <ul class="bookings gutter-bottom-medium"> 
+                  {% for rb in room.bookings %}
+                    <li class="booking">
+                      <span class="status {{ rb.approval_status }}">{{ rb.approval_status }}</span> 
+                      <strong>
+                        {% if rb.reservation.all_day_event? %}
+                          {{ rb.starts_at | date: "%A, %B %-d" }}
+                          {% if rb.reservation.overnight? %}
+                            - {{ rb.ends_at | date: "%A, %B %-d" }}
+                          {% endif %}
+                        {% else %}
+                          {{ rb.starts_at | date: date_format }} - {{ rb.ends_at | date: date_format }}
+                        {% endif %}
+                      </strong> - {{ rb.event.name }}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </article>
+            {% endif %}
+          {% endfor %}
+        </section> 
+      {% endif %}
+    </div>
+  </body>
+</html>
